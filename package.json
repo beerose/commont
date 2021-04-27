@@ -1,0 +1,44 @@
+{
+  "name": "use-comments",
+  "private": false,
+  "description": "Effortlessly add a comment section to your website, and start the discussion on your content.",
+  "version": "0.0.1",
+  "license": "MIT",
+  "author": {
+    "name": "Aleksandra Sikora",
+    "url": "https://github.com/beerose"
+  },
+  "main": "dist/index.js",
+  "source": "src/index.ts",
+  "types": "dist/index.d.ts",
+  "module": "dist/index.esm.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "microbundle watch",
+    "build:microbundle": "microbundle --no-compress --tsconfig tsconfig.lib.json --globals react=React"
+  },
+  "peerDependencies": {
+    "react": "*"
+  },
+  "devDependencies": {
+    "@types/react": "17.0.4",
+    "microbundle": "^0.12.3",
+    "typescript": "4.2.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/beerose/commont"
+  },
+  "bugs": {
+    "url": "https://github.com/beerose/commont/issues"
+  },
+  "homepage": "https://github.com/beerose/commont#readme",
+  "keywords": [
+    "react",
+    "blog",
+    "hook",
+    "comments"
+  ]
+}
