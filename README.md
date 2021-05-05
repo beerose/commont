@@ -1,8 +1,6 @@
-<!-- ![npm](https://img.shields.io/npm/v/use-comments) -->
+![npm](https://img.shields.io/npm/v/commont)
 
 # useComments
-
-TODO
 
 React hook to effortlessly add a comment section to your website, and start the
 discussion on your content.
@@ -12,7 +10,6 @@ discussion on your content.
 ### 🎃 Headless React Hook
 
 `useComments` just cares about the data. You write your own UI.
-
 
 ---
 

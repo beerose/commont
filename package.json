@@ -1,5 +1,5 @@
 {
-  "name": "use-comments",
+  "name": "commont",
   "private": false,
   "description": "Effortlessly add a comment section to your website, and start the discussion on your content.",
   "version": "0.0.1",
@@ -17,7 +17,7 @@
   ],
   "scripts": {
     "dev": "microbundle watch",
-    "build:microbundle": "microbundle --no-compress --tsconfig tsconfig.lib.json --globals react=React"
+    "build": "microbundle --no-compress --globals react=React"
   },
   "peerDependencies": {
     "react": "*"
