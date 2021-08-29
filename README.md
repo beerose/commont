@@ -1,110 +1,130 @@
+# @commont/react
+
 ![npm](https://img.shields.io/npm/v/commont)
 
-# useComments
+## Getting set up
 
-React hook to effortlessly add a comment section to your website, and start the
-discussion on your content.
+To use [Commont](https://www.commont.app/), you need to create a new account via our [signup page](https://www.commont.app/signup). You can sign up using an email and password or by using GitHub or Google. Once you have an account, you can access the Commont dashboard. Initially, you'll see one default project that you can configure as you need.
 
-# What is it?
+👀 Read the [docs](https://www.commont.app/docs) for more information.
 
-### 🎃 Headless React Hook
 
-`useComments` just cares about the data. You write your own UI.
+## Installing @commont/react
 
----
+```sh
+yarn add @commont/react commont # npm install @commont/reactcommont
+```
 
-**Create beautiful UI for your comments**
+The package exports a `useComments` hook that you can use to fetch the comments for your project.
 
-   Start off from one of the examples or write it from scratch.
+## Using useComments hook
 
-   1. [Theme UI](https://codesandbox.io/s/use-comments-theme-ui-demo-hjqqj)
-
-   2. [Tailwind](https://codesandbox.io/s/use-comments-demo-tailwind-pvhgw)
-
-# API Reference
-
-## `useComments`
-
-Fetches comments from the backend on mount and whenever `config.take` or `config.skip` change.
+`useComments` fetches comments from the backend on mount and whenever take or skip change.
 
 ### Parameters
 
-- **projectId**: Your project ID
-- **postId**: Comments will be fetched for the post with identifier `postId`
-- **config**: Configurable offset and limit for the server request. See
-  [`UseCommentsConfig`](#use-comments-config)
+`useComments` takes an object with the following parameters:
 
-### TypeScript Signature
+* **projectId** — Your project ID.
+* **topic** — Comments will be fetched for a particular topic, e.g. _my-post-about-cats_.
+* **take** — Number of comments to fetch.
+* **skip** — Number of comments to skip (offset).
 
-```ts
-const useComments: (
-  projectId: string,
-  postId: string,
-  config?: UseCommentsConfig | undefined
-) => UseComentsResult;
-```
+### Example usage in a React component
 
-### Returns `UseComentsResult`
+```tsx
+import { useComments, CommentStatus } from '@commont/react';
 
-```ts
-interface UseComentsResult {
-  comments: Comment[];
-  addComment: ({
-    content,
-    author,
-  }: Pick<Comment, 'content' | 'author'>) => void;
-  refetch: () => void;
-  count: number;
-  loading: boolean;
-  error: UseCommentsError | null;
+const Post = ({ projectId }) => {
+  const { comments, count, loading, refetch, error } = useComments(
+    projectId,
+    'post-id'
+    { take: 10, skip: 0 }
+    );
+  }
+
+  return (
+    <section>
+      <h3>{count} comments</h3>
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <div>
+          {comments.map(({ author, content, created_at, status }) => (
+            <article key={created_at} className="bg-gray-100 rounded my-6 p-4">
+              <div className="font-bold mb-2">
+                {author} ・ {new Date(created_at).toLocaleDateString()}
+              </div>
+              <p className="text-gray-700">{content}</p>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  )
 }
 ```
 
-## `Comment`
+## Examples
+
+- <a href="https://codesandbox.io/s/commont-react-theme-ui-demo-osx9o">Demo with Theme UI</a>
+- <a href="https://codesandbox.io/s/commont-react-demo-tailwind-pvhgw">Demo with Tailwind</a>
+- <a href="https://codesandbox.io/s/commont-react-theme-ui-pagination-o4tg8">Demo with Theme UI — an example with pagination</a>
+
+## API Reference
+
+### UseCommentsComment
 
 ```ts
-export interface Comment {
-  post_id: string;
-  author: string;
-  content: string;
-  created_at: string;
-  status?: CommentStatus;
+interface UseCommentsComment {
+ topic: string;
+ author: string;
+ content: string;
+ createdAt: string;
+ status?: UseCommentsStatus;
 }
 ```
 
-## `UseCommentsConfig`
+### UseCommentsStatus
+
+When user adds a new comment it will be in one of four states:
+
+- **sending** — add comment request is still pending.
+- **added** — the comment was successfully added and is visible for other people.
+- **delivered-awaiting-approval** — the comment was successfully added, but it's not yet visible for other people.
+- **failed** — adding a comment was unsuccessful.
 
 ```ts
-export interface UseCommentsConfig {
+type UseCommentsStatus =
+ | 'sending'
+ | 'added'
+ | 'delivered-awaiting-approval'
+ | 'failed';
+```
+
+### UseCommentsParameters
+
+```ts
+interface UseCommentsParameters {
+  projectId: string;
+  topic: string;
   take?: number;
   skip?: number;
 }
 ```
 
-## `CommentStatus`
-
-When user is adding a new comment it will be in one of four states:
-
-- `sending` — add comment request is still pending.
-- `added` — the comment was successfully added and is visible for other people.
-- `delivered-awaiting-approval` — the comment was successfully added, but it's
-  not yet visible for other people. You can make comments to require approval
-  before being visible to others.
-- `failed` — adding a comment was unsuccessful.
+### UseCommentsResult
 
 ```ts
-export declare type CommentStatus =
-  | 'sending'
-  | 'added'
-  | 'delivered-awaiting-approval'
-  | 'failed';
-```
-
-## `UseCommentsError`
-
-```ts
-interface UseCommentsError {
-  error: string;
-  details: string;
+interface UseComentsResult {
+  comments: UseCommentsComment[];
+  addComment: ({
+    content,
+    author,
+  }: Pick<UseCommentsComment, 'content' | 'author'>) => void;
+  refetch: () => void;
+  count: number;
+  loading: boolean;
+  error: string | null;
 }
 ```
