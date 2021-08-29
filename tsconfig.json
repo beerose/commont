@@ -1,5 +1,5 @@
 {
-  "include": ["./src/*"],
+  "include": ["./src/*", "test/msw"],
   "compilerOptions": {
     "target": "esnext",
     "module": "commonjs",
@@ -11,7 +11,6 @@
     "emitDecoratorMetadata": true,
     "noEmit": true,
     "skipLibCheck": true,
-    "noImplicitAny": false,
     "resolveJsonModule": true,
     "outDir": "dist"
   }
