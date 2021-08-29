@@ -1,16 +1,11 @@
-/* eslint-disable no-mixed-spaces-and-tabs */
 import { useState, useEffect, useRef } from 'react';
 
-export interface Comment {
+export interface UseCommentsComment {
   author: string;
   content: string;
   topic: string;
   createdAt: string;
-  status?: CommontStatus;
-}
-
-interface InternalComment extends Comment {
-  hidden: boolean;
+  status?: UseCommentsStatus;
 }
 
 /**
@@ -20,33 +15,33 @@ interface InternalComment extends Comment {
  * When the request succeeds and the comment is hidden and awaiting approval, we receive `'delivered-awaiting-approval'`.
  * When the request fails, the status is `'failed'`. - You can use this information to prompt user to retry.
  */
-export type CommontStatus =
+export type UseCommentsStatus =
   | 'sending'
   | 'added'
   | 'delivered-awaiting-approval'
   | 'failed';
 
-export interface UseCommentsParameters {
+/** @internal */
+export interface FetchCommentsAPIPayload {
   projectId: string;
   topic: string;
   take?: number;
   skip?: number;
 }
 
-export interface UseCommentsResult {
-  comments: Comment[];
-  addComment: ({
-    content,
-    author,
-  }: Pick<Comment, 'content' | 'author'>) => void;
-  refetch: () => void;
+/** @internal */
+export interface FetchCommentsAPIResponse {
+  comments: UseCommentsComment[];
   count: number;
-  loading: boolean;
-  error: string | null;
 }
 
-const _fetchComments = async (payload: Record<string, any>) => {
-  const params = new URLSearchParams(payload).toString();
+const _fetchComments = async (payload: FetchCommentsAPIPayload) => {
+  const params = new URLSearchParams({
+    projectId: payload.projectId,
+    topic: payload.topic,
+    ...(payload.skip && { skip: payload.skip.toString() }),
+    ...(payload.take && { take: payload.take.toString() }),
+  }).toString();
   const url = `https://www.commont.app/api/comments?${params}`;
 
   const response = await fetch(url, {
@@ -55,10 +50,7 @@ const _fetchComments = async (payload: Record<string, any>) => {
       'Content-Type': 'application/json',
     },
   });
-  const responseJson: {
-    comments: Comment[];
-    count: number;
-  } = await response.json();
+  const responseJson: FetchCommentsAPIResponse = await response.json();
 
   if (response.ok) {
     return responseJson;
@@ -73,15 +65,33 @@ const _fetchComments = async (payload: Record<string, any>) => {
   return Promise.reject(new Error(response.statusText));
 };
 
-const _addComment = async (payload: Record<string, string>) => {
-  const response = await fetch('https://www.commont.app/api/add-comment', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-  const responseJson: { comment: InternalComment } = await response.json();
+/** @internal */
+export interface AddCommentAPIPayload {
+  projectId: string;
+  topic: string;
+  content: string;
+  author: string;
+}
+
+/** @internal */
+export interface AddCommentAPIResponse {
+  comment: UseCommentsComment & {
+    hidden: boolean;
+  };
+}
+
+const _addComment = async (payload: AddCommentAPIPayload) => {
+  const response = await fetch(
+    `https://www.commont.app/api/add-comment?projectId=${payload.projectId}`,
+    {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+  const responseJson: AddCommentAPIResponse = await response.json();
 
   if (response.ok) {
     return responseJson
@@ -92,13 +102,33 @@ const _addComment = async (payload: Record<string, string>) => {
   return Promise.reject(new Error(response.statusText));
 };
 
+export interface UseCommentsParameters {
+  projectId: string;
+  topic: string;
+  take?: number;
+  skip?: number;
+}
+
+export interface UseCommentsResult {
+  comments: UseCommentsComment[];
+  addComment: ({
+    content,
+    author,
+  }: Pick<UseCommentsComment, 'content' | 'author'>) => void;
+  refetch: () => void;
+  count: number;
+  loading: boolean;
+  error: string | null;
+}
+
 /**
- * Fetches comments from Hasura backend specified in `hasuraUrl` on mount and whenever
- * `config.take` or `config.skip` change.
+ * Fetches comments from Commont's backend on mount and when
+ * `config.take` or `config.skip` changes.
  *
  * @param projectId Id of your Commont's project
- * @param topic Comments will be fetched for the post with id `topic`
- * @param config Configurable skip and take for the GraphQL query to Hasura
+ * @param topic Comments will be fetched for a particular topic, e.g. my-post-about-cats.
+ * @param take Number of comments to fetch.
+ * @param skip Number of comments to skip.
  * @returns comments for given post, aggregated count of all comments, error,
  *          loading state and a function to refetch data from backend.
  */
@@ -108,7 +138,7 @@ export const useComments = ({
   skip,
   take,
 }: UseCommentsParameters): UseCommentsResult => {
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [comments, setComments] = useState<UseCommentsComment[]>([]);
   const [count, setCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -145,10 +175,10 @@ export const useComments = ({
   const addComment = ({
     content,
     author,
-  }: Pick<Comment, 'content' | 'author'>) => {
-    const createdAt = new Date().toDateString();
+  }: Pick<UseCommentsComment, 'content' | 'author'>) => {
+    const createdAt = new Date().toString();
 
-    const newComment: Comment = {
+    const newComment: UseCommentsComment = {
       author,
       content,
       topic,
@@ -170,16 +200,15 @@ export const useComments = ({
         const remoteComment = res.comment;
         if (isMounted) {
           setComments(prev =>
-            prev.map(
-              (x): Comment =>
-                x === newComment
-                  ? {
-                      ...remoteComment,
-                      status: remoteComment.hidden
-                        ? 'delivered-awaiting-approval'
-                        : 'added',
-                    }
-                  : x
+            prev.map(x =>
+              x === newComment
+                ? {
+                    ...remoteComment,
+                    status: remoteComment.hidden
+                      ? 'delivered-awaiting-approval'
+                      : 'added',
+                  }
+                : x
             )
           );
         }
@@ -188,14 +217,13 @@ export const useComments = ({
         if (isMounted) {
           setError(err.message);
           setComments(prev =>
-            prev.map(
-              (x): Comment =>
-                x === newComment
-                  ? {
-                      ...newComment,
-                      status: 'failed',
-                    }
-                  : x
+            prev.map(x =>
+              x === newComment
+                ? {
+                    ...newComment,
+                    status: 'failed',
+                  }
+                : x
             )
           );
         }

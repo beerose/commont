@@ -1,7 +1,13 @@
-import { Comment, UseCommentsParameters } from '../../src';
+import {
+  UseCommentsComment,
+  FetchCommentsAPIPayload,
+  FetchCommentsAPIResponse,
+  AddCommentAPIPayload,
+  AddCommentAPIResponse,
+} from '../../src';
 import { rest } from 'msw';
 
-const comments: Comment[] = [
+const comments: UseCommentsComment[] = [
   {
     author: 'Aleksandra',
     content: 'What a cute dog!',
@@ -28,27 +34,10 @@ const comments: Comment[] = [
   },
 ];
 
-interface AddCommentAPIResult {
-  comment: Comment & {
-    hidden: boolean;
-  };
-}
-
-interface AddCommentAPIParameters {
-  projectId: string;
-  topic: string;
-  content: string;
-  author: string;
-}
-
 export const handlers = [
   rest.get<
-    UseCommentsParameters,
-    | {
-        comments: Comment[];
-        count: number;
-      }
-    | { errorMessage: string }
+    FetchCommentsAPIPayload,
+    FetchCommentsAPIResponse | { errorMessage: string }
   >('https://www.commont.app/api/comments', (req, res, ctx) => {
     const projectId = req.url.searchParams.get('projectId');
     const topic = req.url.searchParams.get('topic');
@@ -78,8 +67,8 @@ export const handlers = [
     );
   }),
   rest.post<
-    AddCommentAPIParameters,
-    AddCommentAPIResult | { errorMessage: string }
+    AddCommentAPIPayload,
+    AddCommentAPIResponse | { errorMessage: string }
   >('https://www.commont.app/api/add-comment', (req, res, ctx) => {
     const { author, content, topic } = req.body;
 

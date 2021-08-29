@@ -2,7 +2,7 @@
   "name": "commont",
   "private": false,
   "description": "Effortlessly add a comment section to your website, and start the discussion on your content.",
-  "version": "0.0.2",
+  "version": "0.0.6",
   "license": "MIT",
   "author": {
     "name": "Aleksandra Sikora",
@@ -17,7 +17,7 @@
   ],
   "scripts": {
     "dev": "microbundle watch",
-    "build": "microbundle --no-compress --globals react=React",
+    "build": "microbundle --no-compress --globals react=React --tsconfig tsconfig.lib.json",
     "test": "jest"
   },
   "peerDependencies": {
