@@ -55,10 +55,10 @@ const Post = ({ projectId }) => {
         <p>Loading...</p>
       ) : (
         <div>
-          {comments.map(({ author, content, created_at, status }) => (
-            <article key={created_at} className="bg-gray-100 rounded my-6 p-4">
+          {comments.map(({ author, content, createdAt, status }) => (
+            <article key={createdAt} className="bg-gray-100 rounded my-6 p-4">
               <div className="font-bold mb-2">
-                {author} ・ {new Date(created_at).toLocaleDateString()}
+                {author} ・ {new Date(createdAt).toLocaleDateString()}
               </div>
               <p className="text-gray-700">{content}</p>
             </article>
