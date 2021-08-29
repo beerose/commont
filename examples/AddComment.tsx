@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Comment } from '../src/';
+import { UseCommentsComment } from '../src/';
 
 interface AddCommentProps {
-  onSubmit(values: Pick<Comment, 'author' | 'content'>): void;
+  onSubmit(values: Pick<UseCommentsComment, 'author' | 'content'>): void;
 }
 export const AddComment = ({ onSubmit }: AddCommentProps) => {
   const [username, setUsername] = useState('');

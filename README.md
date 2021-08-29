@@ -95,7 +95,7 @@ interface UseCommentsComment {
 
 ### UseCommentsStatus
 
-When user adds a new comment it will be in one of four states:
+When a user adds a new comment, it will be in one of four states:
 
 - **sending** — add comment request is still pending.
 - **added** — the comment was successfully added and is visible for other
